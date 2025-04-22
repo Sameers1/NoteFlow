@@ -158,11 +158,14 @@ const TranscriptionArea: React.FC<TranscriptionAreaProps> = ({
             )}
           </TabsContent>
           
-          <TabsContent value="transcript" className="space-y-4 max-h-80 overflow-y-auto">
+          <TabsContent 
+            value="transcript" 
+            className="space-y-4 max-h-80 overflow-y-auto transition-opacity duration-500 animate-in fade-in-50 slide-in-from-bottom-5"
+          >
             {!isRecording && transcriptionData.length === 0 ? (
               <div className="h-64 flex flex-col items-center justify-center text-center">
-                <div className="w-16 h-16 mb-4 rounded-full bg-background flex items-center justify-center">
-                  <MessageSquare className="h-8 w-8 text-gray-400" />
+                <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-teal-500/20 to-emerald-500/20 flex items-center justify-center shadow-lg shadow-teal-500/5">
+                  <MessageSquare className="h-8 w-8 text-teal-400 animate-pulse-slow" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-300 mb-2">No Transcript Yet</h3>
                 <p className="text-gray-400 max-w-md text-sm">
@@ -173,33 +176,42 @@ const TranscriptionArea: React.FC<TranscriptionAreaProps> = ({
             ) : (
               <div className="space-y-3 text-sm">
                 {/* Sample transcription content - would be populated by real data */}
-                <div className="pb-3 border-b border-gray-800">
+                <div 
+                  className="pb-3 border-b border-gray-800 hover:border-teal-500/20 transition-all duration-300"
+                  style={{ animationDelay: "50ms" }}
+                >
                   <div className="flex items-center mb-1">
                     <Badge className="bg-blue-500/20 text-blue-400 border-none mr-2">John</Badge>
                     <span className="text-xs text-gray-500">10:01 AM</span>
                   </div>
-                  <p className="text-gray-300">Welcome everyone to our weekly product meeting. I'd like to start by discussing our Q2 results and then move on to the upcoming feature releases.</p>
+                  <p className="text-gray-300 hover:text-white transition-colors duration-300">Welcome everyone to our weekly product meeting. I'd like to start by discussing our Q2 results and then move on to the upcoming feature releases.</p>
                 </div>
                 
-                <div className="pb-3 border-b border-gray-800">
+                <div 
+                  className="pb-3 border-b border-gray-800 hover:border-teal-500/20 transition-all duration-300"
+                  style={{ animationDelay: "100ms" }}
+                >
                   <div className="flex items-center mb-1">
                     <Badge className="bg-green-500/20 text-green-400 border-none mr-2">Sarah</Badge>
                     <span className="text-xs text-gray-500">10:02 AM</span>
                   </div>
-                  <p className="text-gray-300">Thanks John. I've prepared a brief overview of our performance metrics. We're seeing a 15% increase in user engagement since the last update.</p>
+                  <p className="text-gray-300 hover:text-white transition-colors duration-300">Thanks John. I've prepared a brief overview of our performance metrics. We're seeing a 15% increase in user engagement since the last update.</p>
                 </div>
                 
-                <div className="pb-3 border-b border-gray-800">
+                <div 
+                  className="pb-3 border-b border-gray-800 hover:border-teal-500/20 transition-all duration-300"
+                  style={{ animationDelay: "150ms" }}
+                >
                   <div className="flex items-center mb-1">
                     <Badge className="bg-purple-500/20 text-purple-400 border-none mr-2">Michael</Badge>
                     <span className="text-xs text-gray-500">10:03 AM</span>
                   </div>
-                  <p className="text-gray-300">That's great news. I think it's directly related to the improvements we made to the onboarding flow.</p>
+                  <p className="text-gray-300 hover:text-white transition-colors duration-300">That's great news. I think it's directly related to the improvements we made to the onboarding flow.</p>
                 </div>
                 
                 {isRecording && (
-                  <div className="relative bg-background/30 p-3 rounded-lg border border-primary/20">
-                    <div className="flex items-center text-primary">
+                  <div className="relative bg-background/30 p-3 rounded-lg border border-teal-500/20 animate-pulse-slow">
+                    <div className="flex items-center text-teal-400">
                       <span className="animate-pulse mr-2">●</span>
                       <span className="text-sm">Listening...</span>
                     </div>
