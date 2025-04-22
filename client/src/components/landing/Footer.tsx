@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
                 <li><a href="#features" className="text-gray-400 hover:text-white transition-colors duration-300">Features</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Pricing</a></li>
+                <li><Link href="/pricing"><a className="text-gray-400 hover:text-white transition-colors duration-300">Pricing</a></Link></li>
                 <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Integrations</a></li>
               </ul>
             </div>
@@ -30,9 +30,9 @@ const Footer: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">About</a></li>
+                <li><Link href="/about"><a className="text-gray-400 hover:text-white transition-colors duration-300">About</a></Link></li>
                 <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Careers</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Contact</a></li>
+                <li><Link href="/contact"><a className="text-gray-400 hover:text-white transition-colors duration-300">Contact</a></Link></li>
               </ul>
             </div>
             
