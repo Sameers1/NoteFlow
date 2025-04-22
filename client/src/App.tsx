@@ -6,6 +6,7 @@ import { queryClient } from "./lib/queryClient";
 import Home from "./pages/home";
 import Dashboard from "./pages/dashboard";
 import History from "./pages/history";
+import UsageStats from "./pages/stats";
 import Pricing from "./pages/pricing";
 import About from "./pages/about";
 import Contact from "./pages/contact";
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/history" component={History} />
+      <Route path="/stats" component={UsageStats} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />

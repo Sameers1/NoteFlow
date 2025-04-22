@@ -20,10 +20,7 @@ const Dashboard: React.FC = () => {
         <div className="md:w-1/3 space-y-6">
           <RecordingControls onRecordingChange={handleRecordingChange} />
           <AudioSource />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ExportOptions />
-            <Usage />
-          </div>
+          <ExportOptions />
         </div>
         
         {/* Right Column: Transcription Area */}
