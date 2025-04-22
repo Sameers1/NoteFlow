@@ -11,31 +11,17 @@ const AudioSource: React.FC = () => {
     { value: "default", label: "Default Microphone" }
   ]);
   const [selectedDevice, setSelectedDevice] = useState("default");
-  const [visualizerBars, setVisualizerBars] = useState<number[]>([]);
-  const barCount = 16; // Number of bars in the visualizer
 
   // Generate audio spectrum visualization
   useEffect(() => {
-    const bars: number[] = [];
-    for (let i = 0; i < barCount; i++) {
-      bars.push(0);
-    }
-    setVisualizerBars(bars);
-    
-    // Simulate audio level visualization
+    // Simulate audio level visualization with a 1 second update interval
     let interval: number | null = null;
     
     const simulateAudioLevel = () => {
       interval = window.setInterval(() => {
         const randomLevel = Math.floor(Math.random() * 100);
         setAudioLevel(randomLevel);
-        
-        // Update visualizer bars with random heights
-        const newBars = Array(barCount).fill(0).map(() => {
-          return Math.random() * 100;
-        });
-        setVisualizerBars(newBars);
-      }, 150);
+      }, 1000); // Update every 1 second as requested
     };
 
     // In a real app, we would check if user is recording
@@ -111,22 +97,6 @@ const AudioSource: React.FC = () => {
               className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-200 ease-out animate-gradient-shift" 
               style={{ width: `${audioLevel}%` }}
             ></div>
-          </div>
-          
-          {/* Audio spectrum visualizer */}
-          <div className="h-14 w-full flex items-end justify-between gap-0.5 p-1 bg-background/30 rounded-lg backdrop-blur-sm border border-gray-800 overflow-hidden">
-            {visualizerBars.map((height, idx) => (
-              <div 
-                key={idx} 
-                className="w-full bg-gradient-to-t from-blue-500 to-purple-500 opacity-80 rounded-t transition-all duration-150 ease-out"
-                style={{ 
-                  height: `${height}%`,
-                  animationDelay: `${idx * 50}ms`,
-                  transform: 'scaleY(1)',
-                  transformOrigin: 'bottom'
-                }}
-              ></div>
-            ))}
           </div>
         </div>
         

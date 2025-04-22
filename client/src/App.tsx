@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { queryClient } from "./lib/queryClient";
 import Home from "./pages/home";
 import Dashboard from "./pages/dashboard";
+import History from "./pages/history";
 import Pricing from "./pages/pricing";
 import About from "./pages/about";
 import Contact from "./pages/contact";
