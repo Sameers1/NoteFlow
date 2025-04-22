@@ -6,10 +6,8 @@ const Navbar: React.FC = () => {
   return (
     <nav className="px-6 py-4 flex items-center justify-between bg-background/80 backdrop-blur-md sticky top-0 z-50">
       <div className="flex items-center">
-        <Link href="/">
-          <a className="text-2xl font-bold font-sans">
+        <Link href="/" className="text-2xl font-bold font-sans">
             Note<span className="gradient-text">Flow</span>
-          </a>
         </Link>
       </div>
       
@@ -17,20 +15,14 @@ const Navbar: React.FC = () => {
         <a href="#features" className="text-gray-300 hover:text-white transition-colors duration-300">
           Features
         </a>
-        <Link href="/pricing">
-          <a className="text-gray-300 hover:text-white transition-colors duration-300">
-            Pricing
-          </a>
+        <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors duration-300">
+          Pricing
         </Link>
-        <Link href="/about">
-          <a className="text-gray-300 hover:text-white transition-colors duration-300">
-            About
-          </a>
+        <Link href="/about" className="text-gray-300 hover:text-white transition-colors duration-300">
+          About
         </Link>
-        <Link href="/contact">
-          <a className="text-gray-300 hover:text-white transition-colors duration-300">
-            Contact
-          </a>
+        <Link href="/contact" className="text-gray-300 hover:text-white transition-colors duration-300">
+          Contact
         </Link>
       </div>
       

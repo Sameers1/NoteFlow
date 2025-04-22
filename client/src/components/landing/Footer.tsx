@@ -7,10 +7,8 @@ const Footer: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center md:items-start">
           <div className="mb-8 md:mb-0">
-            <Link href="/">
-              <a className="text-2xl font-bold font-sans">
+            <Link href="/" className="text-2xl font-bold font-sans">
                 Note<span className="gradient-text">Flow</span>
-              </a>
             </Link>
             <p className="mt-2 text-sm text-gray-400 max-w-xs">
               Transforming how professionals document and organize their meeting insights.
@@ -22,7 +20,7 @@ const Footer: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
                 <li><a href="#features" className="text-gray-400 hover:text-white transition-colors duration-300">Features</a></li>
-                <li><Link href="/pricing"><a className="text-gray-400 hover:text-white transition-colors duration-300">Pricing</a></Link></li>
+                <li><Link href="/pricing" className="text-gray-400 hover:text-white transition-colors duration-300">Pricing</Link></li>
                 <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Integrations</a></li>
               </ul>
             </div>
@@ -30,9 +28,9 @@ const Footer: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><Link href="/about"><a className="text-gray-400 hover:text-white transition-colors duration-300">About</a></Link></li>
+                <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors duration-300">About</Link></li>
                 <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Careers</a></li>
-                <li><Link href="/contact"><a className="text-gray-400 hover:text-white transition-colors duration-300">Contact</a></Link></li>
+                <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors duration-300">Contact</Link></li>
               </ul>
             </div>
             
