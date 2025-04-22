@@ -57,11 +57,19 @@
 /* Gradient text utility */
 .gradient-text {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600;
+  filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.5));
 }
 
 /* Glass card effect */
 .glass-card {
   @apply bg-opacity-5 backdrop-blur-md border border-white/10 bg-white;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.glass-card-highlighted {
+  @apply glass-card;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
 }
 
 /* Custom scrollbar */
@@ -94,6 +102,146 @@
 
 .recording-pulse {
   animation: recording-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Float animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.animate-float-delay-1 {
+  animation: float 5s ease-in-out 0.5s infinite;
+}
+
+.animate-float-delay-2 {
+  animation: float 5s ease-in-out 1s infinite;
+}
+
+/* Glow effects */
+.glow-effect {
+  position: relative;
+}
+
+.glow-effect::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #6366f1, #8b5cf6, #ec4899);
+  border-radius: calc(var(--radius) + 2px);
+  z-index: -1;
+  filter: blur(10px);
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.glow-effect:hover::before {
+  opacity: 0.7;
+}
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.7);
+}
+
+/* Ambient glowing orbs */
+.glowing-orbs {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.3;
+  animation: orb-movement 15s ease-in-out infinite alternate;
+}
+
+@keyframes orb-movement {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(50px, 25px) scale(1.1);
+  }
+}
+
+/* Typing animation */
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.typing-animation {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 3.5s steps(40, end);
+}
+
+/* Blinking cursor animation */
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: rgba(139, 92, 246, 0.7); }
+}
+
+.typing-cursor {
+  border-right: 2px solid;
+  animation: blink-caret .75s step-end infinite;
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-effect {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+/* Breathe animation */
+@keyframes breathe {
+  0%, 100% {
+    box-shadow: 0 0 10px 2px rgba(139, 92, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px rgba(139, 92, 246, 0.5);
+  }
+}
+
+.breathe {
+  animation: breathe 4s ease-in-out infinite;
 }
 
 /* Transcription area */
