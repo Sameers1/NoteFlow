@@ -1,5 +1,8 @@
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Lightbulb, MessageSquare, ListChecks, Clock } from "lucide-react";
 
 interface TranscriptionAreaProps {
   isRecording: boolean;
@@ -9,75 +12,188 @@ interface TranscriptionAreaProps {
   }>;
 }
 
+// Sample key topics - would come from AI processing in a real app
+const sampleKeyTopics = [
+  { topic: "Q2 Performance Results", summary: "15% increase in user engagement since the last update." },
+  { topic: "Onboarding Flow Improvements", summary: "Direct correlation between new user onboarding and increased retention rates." },
+  { topic: "Feature Release Schedule", summary: "New dashboard features planned for next month with beta testing starting in 2 weeks." },
+  { topic: "Customer Feedback Analysis", summary: "Mobile app reviews showing positive response to latest UI changes." }
+];
+
+// Sample action items - would come from AI processing in a real app
+const sampleActionItems = [
+  { person: "John", task: "Share Q2 report with the team", due: "Today" },
+  { person: "Sarah", task: "Schedule follow-up meeting with UX team", due: "Apr 25" },
+  { person: "Michael", task: "Submit budget proposal for new features", due: "Apr 30" }
+];
+
 const TranscriptionArea: React.FC<TranscriptionAreaProps> = ({ 
   isRecording,
   transcriptionData = []
 }) => {
+  const [liveView, setLiveView] = useState(false);
+  
   return (
     <Card className="glass-card h-full">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">Live Transcription</h2>
-          <div className="flex items-center space-x-3">
-            <button className="p-2 hover:bg-muted rounded-lg transition-colors duration-300" aria-label="Settings">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-            <button className="p-2 hover:bg-muted rounded-lg transition-colors duration-300" aria-label="Expand">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        <div className="transcription-area bg-muted p-5 rounded-xl">
-          {!isRecording && transcriptionData.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center">
-              <div className="w-20 h-20 mb-6 rounded-full bg-background flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-medium text-gray-300 mb-3">No Recording Yet</h3>
-              <p className="text-gray-400 max-w-md">
-                Click the microphone button to start recording your meeting. 
-                Your transcription will appear here in real-time.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Sample transcription content - would be populated by real data */}
-              <div className="mb-4">
-                <span className="font-medium text-primary-400">John:</span>
-                <p className="text-white">Welcome everyone to our weekly product meeting. I'd like to start by discussing our Q2 results and then move on to the upcoming feature releases.</p>
-              </div>
-              
-              <div className="mb-4">
-                <span className="font-medium text-primary-400">Sarah:</span>
-                <p className="text-white">Thanks John. I've prepared a brief overview of our performance metrics. We're seeing a 15% increase in user engagement since the last update.</p>
-              </div>
-              
-              <div className="mb-4">
-                <span className="font-medium text-primary-400">Michael:</span>
-                <p className="text-white">That's great news. I think it's directly related to the improvements we made to the onboarding flow.</p>
-              </div>
-              
-              {isRecording && (
-                <div className="mb-4 relative">
-                  <span className="font-medium text-primary-400">Current Speaker:</span>
-                  <p className="text-white">
-                    <span className="inline-block w-4 h-4 bg-primary-400 rounded-full mr-2 animate-pulse"></span>
-                    Listening...
-                  </p>
-                </div>
-              )}
-            </div>
+      <CardHeader className="flex flex-row items-center justify-between p-6 pb-2">
+        <h2 className="text-xl font-semibold flex items-center">
+          <span className="gradient-text">NoteFlow</span> 
+          {isRecording && (
+            <Badge variant="outline" className="ml-2 bg-red-500/20 text-red-400 border-red-500/50">
+              <span className="animate-pulse mr-1">●</span> Recording
+            </Badge>
           )}
+        </h2>
+        <div className="flex items-center space-x-3">
+          <button 
+            className={`p-2 ${liveView ? 'bg-primary/20 text-primary' : 'text-gray-400'} hover:text-white rounded-lg transition-colors duration-300`} 
+            aria-label="Toggle live view"
+            onClick={() => setLiveView(!liveView)}
+          >
+            <Clock className="h-5 w-5" />
+          </button>
         </div>
+      </CardHeader>
+      
+      <CardContent className="p-6">
+        <Tabs defaultValue="main-points" className="w-full">
+          <TabsList className="grid grid-cols-3 mb-4">
+            <TabsTrigger value="main-points" className="flex items-center">
+              <Lightbulb className="h-4 w-4 mr-2" />
+              <span>Key Points</span>
+            </TabsTrigger>
+            <TabsTrigger value="action-items" className="flex items-center">
+              <ListChecks className="h-4 w-4 mr-2" />
+              <span>Action Items</span>
+            </TabsTrigger>
+            <TabsTrigger value="transcript" className="flex items-center">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              <span>Full Transcript</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="main-points" className="space-y-4">
+            {!isRecording && transcriptionData.length === 0 ? (
+              <div className="h-64 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 mb-4 rounded-full bg-background flex items-center justify-center">
+                  <Lightbulb className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-300 mb-2">Key Points Will Appear Here</h3>
+                <p className="text-gray-400 max-w-md text-sm">
+                  Start recording to automatically identify and organize the main discussion topics.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {sampleKeyTopics.map((topic, idx) => (
+                  <div key={idx} className="bg-background/30 p-4 rounded-lg border border-gray-800">
+                    <h3 className="text-md font-medium text-primary mb-1">{topic.topic}</h3>
+                    <p className="text-sm text-gray-300">{topic.summary}</p>
+                  </div>
+                ))}
+                {isRecording && (
+                  <div className="relative bg-background/30 p-4 rounded-lg border border-primary/20">
+                    <div className="flex items-center text-primary">
+                      <span className="animate-pulse mr-2">●</span>
+                      <span className="text-sm">Identifying key points in real-time...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="action-items" className="space-y-4">
+            {!isRecording && transcriptionData.length === 0 ? (
+              <div className="h-64 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 mb-4 rounded-full bg-background flex items-center justify-center">
+                  <ListChecks className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-300 mb-2">No Action Items Yet</h3>
+                <p className="text-gray-400 max-w-md text-sm">
+                  Start recording to automatically identify and track action items from your meeting.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {sampleActionItems.map((item, idx) => (
+                  <div key={idx} className="flex justify-between bg-background/30 p-3 rounded-lg border border-gray-800">
+                    <div className="flex-1">
+                      <div className="flex items-center mb-1">
+                        <Badge variant="outline" className="bg-primary/10 border-primary/20 text-xs px-2 mr-2">
+                          {item.person}
+                        </Badge>
+                        <span className="text-sm text-gray-300">{item.task}</span>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-xs px-2 self-start ml-2 border-gray-700">
+                      {item.due}
+                    </Badge>
+                  </div>
+                ))}
+                {isRecording && (
+                  <div className="relative bg-background/30 p-4 rounded-lg border border-primary/20">
+                    <div className="flex items-center text-primary">
+                      <span className="animate-pulse mr-2">●</span>
+                      <span className="text-sm">Detecting action items in real-time...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="transcript" className="space-y-4 max-h-80 overflow-y-auto">
+            {!isRecording && transcriptionData.length === 0 ? (
+              <div className="h-64 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 mb-4 rounded-full bg-background flex items-center justify-center">
+                  <MessageSquare className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-300 mb-2">No Transcript Yet</h3>
+                <p className="text-gray-400 max-w-md text-sm">
+                  Click the microphone button to start recording your meeting. 
+                  The full transcript will appear here in real-time.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 text-sm">
+                {/* Sample transcription content - would be populated by real data */}
+                <div className="pb-3 border-b border-gray-800">
+                  <div className="flex items-center mb-1">
+                    <Badge className="bg-blue-500/20 text-blue-400 border-none mr-2">John</Badge>
+                    <span className="text-xs text-gray-500">10:01 AM</span>
+                  </div>
+                  <p className="text-gray-300">Welcome everyone to our weekly product meeting. I'd like to start by discussing our Q2 results and then move on to the upcoming feature releases.</p>
+                </div>
+                
+                <div className="pb-3 border-b border-gray-800">
+                  <div className="flex items-center mb-1">
+                    <Badge className="bg-green-500/20 text-green-400 border-none mr-2">Sarah</Badge>
+                    <span className="text-xs text-gray-500">10:02 AM</span>
+                  </div>
+                  <p className="text-gray-300">Thanks John. I've prepared a brief overview of our performance metrics. We're seeing a 15% increase in user engagement since the last update.</p>
+                </div>
+                
+                <div className="pb-3 border-b border-gray-800">
+                  <div className="flex items-center mb-1">
+                    <Badge className="bg-purple-500/20 text-purple-400 border-none mr-2">Michael</Badge>
+                    <span className="text-xs text-gray-500">10:03 AM</span>
+                  </div>
+                  <p className="text-gray-300">That's great news. I think it's directly related to the improvements we made to the onboarding flow.</p>
+                </div>
+                
+                {isRecording && (
+                  <div className="relative bg-background/30 p-3 rounded-lg border border-primary/20">
+                    <div className="flex items-center text-primary">
+                      <span className="animate-pulse mr-2">●</span>
+                      <span className="text-sm">Listening...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

@@ -17,15 +17,21 @@ const Navbar: React.FC = () => {
         <a href="#features" className="text-gray-300 hover:text-white transition-colors duration-300">
           Features
         </a>
-        <a href="#" className="text-gray-300 hover:text-white transition-colors duration-300">
-          Pricing
-        </a>
-        <a href="#" className="text-gray-300 hover:text-white transition-colors duration-300">
-          About
-        </a>
-        <a href="#" className="text-gray-300 hover:text-white transition-colors duration-300">
-          Contact
-        </a>
+        <Link href="/pricing">
+          <a className="text-gray-300 hover:text-white transition-colors duration-300">
+            Pricing
+          </a>
+        </Link>
+        <Link href="/about">
+          <a className="text-gray-300 hover:text-white transition-colors duration-300">
+            About
+          </a>
+        </Link>
+        <Link href="/contact">
+          <a className="text-gray-300 hover:text-white transition-colors duration-300">
+            Contact
+          </a>
+        </Link>
       </div>
       
       <div className="flex items-center space-x-4">
