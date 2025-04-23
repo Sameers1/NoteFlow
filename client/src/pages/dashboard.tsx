@@ -8,9 +8,14 @@ import Usage from "@/components/dashboard/Usage";
 
 const Dashboard: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState("");
 
   const handleRecordingChange = (recording: boolean) => {
     setIsRecording(recording);
+  };
+
+  const handleTranscriptUpdate = (text: string) => {
+    setTranscript(text);
   };
 
   return (
@@ -18,14 +23,25 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8">
         {/* Left Column: Control Panel */}
         <div className="md:w-1/3 space-y-6">
-          <RecordingControls onRecordingChange={handleRecordingChange} />
+          <RecordingControls 
+            onRecordingChange={handleRecordingChange} 
+            onTranscriptUpdate={handleTranscriptUpdate}
+          />
           <AudioSource />
           <ExportOptions />
         </div>
         
         {/* Right Column: Transcription Area */}
         <div className="md:w-2/3">
-          <TranscriptionArea isRecording={isRecording} />
+          <TranscriptionArea 
+            isRecording={isRecording} 
+            transcriptionData={[
+              {
+                speaker: "You",
+                text: transcript
+              }
+            ]}
+          />
         </div>
       </div>
     </DashboardLayout>

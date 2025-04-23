@@ -1,39 +1,118 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface RecordingControlsProps {
-  onRecordingChange: (isRecording: boolean) => void;
+// TypeScript definitions for Web Speech API
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+  error: any;
 }
 
-const RecordingControls: React.FC<RecordingControlsProps> = ({ onRecordingChange }) => {
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  start(): void;
+  stop(): void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionEvent) => void;
+}
+
+interface Window {
+  SpeechRecognition: new () => SpeechRecognition;
+  webkitSpeechRecognition: new () => SpeechRecognition;
+}
+
+interface RecordingControlsProps {
+  onRecordingChange: (isRecording: boolean) => void;
+  onTranscriptUpdate: (text: string) => void;
+}
+
+const RecordingControls: React.FC<RecordingControlsProps> = ({ onRecordingChange, onTranscriptUpdate }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const timerRef = useRef<number | null>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
+    // Initialize Web Speech API
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join(' ');
+        onTranscriptUpdate(transcript);
+      };
+
+      recognition.onerror = (event: SpeechRecognitionEvent) => {
+        console.error('Speech recognition error:', event.error);
+        stopRecording();
+      };
+
+      recognitionRef.current = recognition;
+    }
+
     return () => {
       if (timerRef.current) {
         window.clearInterval(timerRef.current);
       }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
     };
   }, []);
 
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
-    onRecordingChange(!isRecording);
-
-    if (!isRecording) {
-      // Start recording
+  const startRecording = () => {
+    const recognition = recognitionRef.current;
+    if (recognition) {
+      recognition.start();
+      setIsRecording(true);
+      onRecordingChange(true);
       setRecordingTime(0);
       timerRef.current = window.setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
+    }
+  };
+
+  const stopRecording = () => {
+    const recognition = recognitionRef.current;
+    if (recognition) {
+      recognition.stop();
+    }
+    setIsRecording(false);
+    onRecordingChange(false);
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
     } else {
-      // Stop recording
-      if (timerRef.current) {
-        window.clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+      startRecording();
     }
   };
 

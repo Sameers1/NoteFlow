@@ -175,39 +175,18 @@ const TranscriptionArea: React.FC<TranscriptionAreaProps> = ({
               </div>
             ) : (
               <div className="space-y-3 text-sm">
-                {/* Sample transcription content - would be populated by real data */}
-                <div 
-                  className="pb-3 border-b border-gray-800 hover:border-teal-500/20 transition-all duration-300"
-                  style={{ animationDelay: "50ms" }}
-                >
-                  <div className="flex items-center mb-1">
-                    <Badge className="bg-blue-500/20 text-blue-400 border-none mr-2">John</Badge>
-                    <span className="text-xs text-gray-500">10:01 AM</span>
+                {transcriptionData.map((item, idx) => (
+                  <div 
+                    key={idx}
+                    className="pb-3 border-b border-gray-800 hover:border-teal-500/20 transition-all duration-300"
+                  >
+                    <div className="flex items-center mb-1">
+                      <Badge className="bg-blue-500/20 text-blue-400 border-none mr-2">{item.speaker}</Badge>
+                      <span className="text-xs text-gray-500">{new Date().toLocaleTimeString()}</span>
+                    </div>
+                    <p className="text-gray-300 hover:text-white transition-colors duration-300">{item.text}</p>
                   </div>
-                  <p className="text-gray-300 hover:text-white transition-colors duration-300">Welcome everyone to our weekly product meeting. I'd like to start by discussing our Q2 results and then move on to the upcoming feature releases.</p>
-                </div>
-                
-                <div 
-                  className="pb-3 border-b border-gray-800 hover:border-teal-500/20 transition-all duration-300"
-                  style={{ animationDelay: "100ms" }}
-                >
-                  <div className="flex items-center mb-1">
-                    <Badge className="bg-green-500/20 text-green-400 border-none mr-2">Sarah</Badge>
-                    <span className="text-xs text-gray-500">10:02 AM</span>
-                  </div>
-                  <p className="text-gray-300 hover:text-white transition-colors duration-300">Thanks John. I've prepared a brief overview of our performance metrics. We're seeing a 15% increase in user engagement since the last update.</p>
-                </div>
-                
-                <div 
-                  className="pb-3 border-b border-gray-800 hover:border-teal-500/20 transition-all duration-300"
-                  style={{ animationDelay: "150ms" }}
-                >
-                  <div className="flex items-center mb-1">
-                    <Badge className="bg-purple-500/20 text-purple-400 border-none mr-2">Michael</Badge>
-                    <span className="text-xs text-gray-500">10:03 AM</span>
-                  </div>
-                  <p className="text-gray-300 hover:text-white transition-colors duration-300">That's great news. I think it's directly related to the improvements we made to the onboarding flow.</p>
-                </div>
+                ))}
                 
                 {isRecording && (
                   <div className="relative bg-background/30 p-3 rounded-lg border border-teal-500/20 animate-pulse-slow">
