@@ -1,15 +1,51 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Monitor } from "lucide-react";
 
 const Header: React.FC = () => {
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+
+  const startScreenShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true
+      });
+      
+      setIsScreenSharing(true);
+      
+      // Handle stream end
+      stream.getVideoTracks()[0].onended = () => {
+        setIsScreenSharing(false);
+      };
+    } catch (error) {
+      console.error('Error starting screen share:', error);
+      setIsScreenSharing(false);
+    }
+  };
+
   return (
     <header className="px-6 py-4 bg-background/80 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
-        <div className="flex items-center">
+        <div className="flex items-center gap-4">
           <Link href="/" className="text-2xl font-bold font-sans">
               Note<span className="gradient-text">Flow</span>
           </Link>
+          <Button
+            onClick={startScreenShare}
+            variant={isScreenSharing ? "default" : "outline"}
+            className={`flex items-center gap-2 transition-all duration-300 relative ${
+              isScreenSharing 
+                ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                : "hover:bg-primary/10 hover:text-primary"
+            }`}
+          >
+            <div className="absolute inset-0 rounded-md bg-primary/20 animate-pulse" />
+            <div className="absolute inset-0 rounded-md bg-gradient-to-r from-primary/30 to-purple-500/30 animate-[pulse_2s_ease-in-out_infinite]" />
+            <Monitor className="w-4 h-4 relative z-10" />
+            <span className="relative z-10">{isScreenSharing ? "Sharing Screen" : "Share Screen"}</span>
+          </Button>
         </div>
         
         <div className="flex items-center space-x-4">

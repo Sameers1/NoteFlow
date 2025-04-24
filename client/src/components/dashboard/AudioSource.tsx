@@ -1,183 +1,88 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Mic, Volume2, AlertTriangle, ChevronDown } from "lucide-react";
+import { Mic, Volume2, AlertTriangle, ChevronDown, Monitor, MicOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-const AudioSource: React.FC = () => {
-  const [audioLevel, setAudioLevel] = useState(0);
-  const [audioDevices, setAudioDevices] = useState<{ value: string; label: string }[]>([]);
-  const [selectedDevice, setSelectedDevice] = useState("default");
-  const [sampleRate, setSampleRate] = useState(0);
-  const [bitDepth, setBitDepth] = useState(0);
-  const [signalQuality, setSignalQuality] = useState("Good signal quality");
-  const [lastQualityChange, setLastQualityChange] = useState(Date.now());
-  const [lastLevel, setLastLevel] = useState(0);
-  
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
+interface AudioSourceProps {
+  onAudioStart: (stream: MediaStream) => void;
+  onAudioStop: () => void;
+}
+
+const AudioSource: React.FC<AudioSourceProps> = ({ onAudioStart, onAudioStop }) => {
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDevice, setSelectedDevice] = useState<string>("");
+  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
-    // Initialize audio context and get available devices
-    const initAudio = async () => {
+    const getAudioDevices = async () => {
       try {
-        // Initialize audio context first
-        audioContextRef.current = new AudioContext();
-        analyserRef.current = audioContextRef.current.createAnalyser();
-        analyserRef.current.fftSize = 256;
-        
-        // Get available audio devices
         const devices = await navigator.mediaDevices.enumerateDevices();
-        const audioInputs = devices
-          .filter(device => device.kind === 'audioinput')
-          .map(device => ({
-            value: device.deviceId || `device-${Math.random().toString(36).substr(2, 9)}`,
-            label: device.label || `Microphone ${device.deviceId?.slice(0, 5) || 'Default'}`
-          }));
-        
-        // Ensure we have at least one device
-        if (audioInputs.length === 0) {
-          audioInputs.push({
-            value: 'default',
-            label: 'Default Microphone'
-          });
-        }
-        
+        const audioInputs = devices.filter(device => device.kind === 'audioinput');
         setAudioDevices(audioInputs);
         
-        // Start monitoring immediately with default device
-        await startMonitoring(audioInputs[0].value);
-        
-        // Start monitoring levels right away
-        monitorAudioLevel();
+        if (audioInputs.length > 0) {
+          const defaultDevice = audioInputs.find(d => d.deviceId === 'default') || audioInputs[0];
+          setSelectedDevice(defaultDevice.deviceId || crypto.randomUUID());
+        }
       } catch (error) {
-        console.error('Error initializing audio:', error);
+        console.error('Error getting audio devices:', error);
       }
     };
 
-    initAudio();
-
-    return () => {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach(track => track.stop());
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-    };
+    getAudioDevices();
   }, []);
 
   const startMonitoring = async (deviceId: string) => {
     try {
-      // Stop previous stream if exists
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach(track => track.stop());
-      }
-
-      // Get new stream with fallback to default
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const constraints = {
         audio: {
-          deviceId: deviceId === "default" ? undefined : deviceId,
-          sampleRate: 48000,
-          channelCount: 1,
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false
+          deviceId: deviceId ? { exact: deviceId } : undefined,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
         }
-      }).catch(async (error) => {
-        console.warn('Failed to access selected device, falling back to default:', error);
-        return navigator.mediaDevices.getUserMedia({
-          audio: {
-            sampleRate: 48000,
-            channelCount: 1,
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: false
-          }
-        });
-      });
-      
-      mediaStreamRef.current = stream;
-      
-      // Connect to analyser
-      const source = audioContextRef.current!.createMediaStreamSource(stream);
-      source.connect(analyserRef.current!);
-      
-      // Get audio track settings
-      const audioTrack = stream.getAudioTracks()[0];
-      const settings = audioTrack.getSettings();
-      setSampleRate(settings.sampleRate || 48000);
-      setBitDepth(settings.sampleSize || 24);
+      };
+
+      const audioStream = await navigator.mediaDevices.getUserMedia(constraints);
+      setStream(audioStream);
+      setIsMonitoring(true);
+      onAudioStart(audioStream);
     } catch (error) {
-      console.error('Error accessing microphone:', error);
-      setSignalQuality("Microphone access denied");
-      setSelectedDevice("default");
+      console.error('Error starting audio monitoring:', error);
     }
   };
 
-  const monitorAudioLevel = () => {
-    const analyser = analyserRef.current;
-    if (!analyser) return;
-
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-    
-    const updateLevel = () => {
-      analyser.getByteFrequencyData(dataArray);
-      
-      // Calculate average level with emphasis on higher frequencies (voice range)
-      const voiceRange = dataArray.slice(20, 100);
-      const average = voiceRange.reduce((a, b) => a + b) / voiceRange.length;
-      
-      // Boost sensitivity for voice detection
-      const rawLevel = Math.min(100, Math.round((average / 128) * 100));
-      
-      // Apply less aggressive smoothing
-      const smoothedLevel = Math.round(lastLevel * 0.3 + rawLevel * 0.7);
-      setLastLevel(smoothedLevel);
-      setAudioLevel(smoothedLevel);
-      
-      // Update signal quality with hysteresis and debouncing
-      const now = Date.now();
-      if (now - lastQualityChange > 1000) { // Reduced to 1 second
-        let newQuality = signalQuality;
-        
-        if (smoothedLevel < 5) {
-          newQuality = "No signal";
-        } else if (smoothedLevel < 20) {
-          newQuality = "Weak signal";
-        } else if (smoothedLevel < 50) {
-          newQuality = "Good signal";
-        } else {
-          newQuality = "Strong signal";
-        }
-        
-        if (newQuality !== signalQuality) {
-          setSignalQuality(newQuality);
-          setLastQualityChange(now);
-        }
-      }
-      
-      requestAnimationFrame(updateLevel);
-    };
-    
-    updateLevel();
+  const stopMonitoring = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+      setIsMonitoring(false);
+      onAudioStop();
+    }
   };
 
   const handleDeviceChange = (value: string) => {
     setSelectedDevice(value);
-    startMonitoring(value);
+    if (isMonitoring) {
+      stopMonitoring();
+      startMonitoring(value);
+    }
   };
 
   return (
     <Card className="glass-card overflow-hidden">
       <CardContent className="p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold flex items-center">
-            <Mic className="w-5 h-5 mr-2 text-primary" />
-            Audio Source
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold flex items-center">
+              <Mic className="w-5 h-5 mr-2 text-primary" />
+              Audio Source
+            </h2>
+          </div>
           <Badge variant="outline" className="bg-background/50 text-xs">
             Live Input
           </Badge>
@@ -200,8 +105,8 @@ const AudioSource: React.FC = () => {
               </SelectTrigger>
               <SelectContent className="bg-background/80 backdrop-blur-lg border-gray-800">
                 {audioDevices.map((device) => (
-                  <SelectItem key={device.value} value={device.value} className="hover:bg-primary/10">
-                    {device.label}
+                  <SelectItem key={device.deviceId || crypto.randomUUID()} value={device.deviceId || crypto.randomUUID()} className="hover:bg-primary/10">
+                    {device.label || 'Default Microphone'}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -209,37 +114,24 @@ const AudioSource: React.FC = () => {
           </div>
         </div>
         
-        {/* Audio Visualizer */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-2">
-            <Label className="text-sm text-gray-400 flex items-center">
-              <Volume2 className="w-4 h-4 mr-1" />
-              Input Level
-            </Label>
-            <span className="text-xs text-gray-500 px-2 py-0.5 bg-background/50 rounded-full">{audioLevel}%</span>
-          </div>
-          
-          {/* Audio level bar */}
-          <div className="w-full h-2 bg-background rounded-full overflow-hidden mb-4 shadow-inner">
-            <div 
-              className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-200 ease-out animate-gradient-shift" 
-              style={{ width: `${audioLevel}%` }}
-            ></div>
-          </div>
-        </div>
-        
-        {/* Audio quality indicator */}
-        <div className="text-xs text-gray-400 flex items-center justify-between">
-          <span className="flex items-center">
-            <span className={`h-2 w-2 rounded-full mr-1.5 ${
-              signalQuality.includes("No") ? "bg-red-500" :
-              signalQuality.includes("Weak") ? "bg-yellow-500" :
-              signalQuality.includes("Good") ? "bg-green-500" :
-              "bg-blue-500"
-            }`}></span>
-            {signalQuality}
-          </span>
-          <span className="text-gray-500">{sampleRate}Hz / {bitDepth}-bit</span>
+        <div className="mt-4 flex justify-center">
+          <Button
+            onClick={() => isMonitoring ? stopMonitoring() : startMonitoring(selectedDevice)}
+            variant={isMonitoring ? "default" : "outline"}
+            className="flex items-center gap-2"
+          >
+            {isMonitoring ? (
+              <>
+                <MicOff className="w-4 h-4" />
+                Stop Monitoring
+              </>
+            ) : (
+              <>
+                <Mic className="w-4 h-4" />
+                Start Monitoring
+              </>
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>

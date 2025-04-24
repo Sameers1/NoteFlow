@@ -9,6 +9,7 @@ import Usage from "@/components/dashboard/Usage";
 const Dashboard: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 
   const handleRecordingChange = (recording: boolean) => {
     setIsRecording(recording);
@@ -16,6 +17,14 @@ const Dashboard: React.FC = () => {
 
   const handleTranscriptUpdate = (text: string) => {
     setTranscript(text);
+  };
+
+  const handleAudioStart = (stream: MediaStream) => {
+    setAudioStream(stream);
+  };
+
+  const handleAudioStop = () => {
+    setAudioStream(null);
   };
 
   return (
@@ -27,7 +36,10 @@ const Dashboard: React.FC = () => {
             onRecordingChange={handleRecordingChange} 
             onTranscriptUpdate={handleTranscriptUpdate}
           />
-          <AudioSource />
+          <AudioSource 
+            onAudioStart={handleAudioStart}
+            onAudioStop={handleAudioStop}
+          />
           <ExportOptions />
         </div>
         
