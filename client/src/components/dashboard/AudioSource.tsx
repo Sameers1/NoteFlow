@@ -7,36 +7,167 @@ import { Badge } from "@/components/ui/badge";
 
 const AudioSource: React.FC = () => {
   const [audioLevel, setAudioLevel] = useState(0);
-  const [audioDevices, setAudioDevices] = useState<{ value: string; label: string }[]>([
-    { value: "default", label: "Default Microphone" }
-  ]);
+  const [audioDevices, setAudioDevices] = useState<{ value: string; label: string }[]>([]);
   const [selectedDevice, setSelectedDevice] = useState("default");
+  const [sampleRate, setSampleRate] = useState(0);
+  const [bitDepth, setBitDepth] = useState(0);
+  const [signalQuality, setSignalQuality] = useState("Good signal quality");
+  const [lastQualityChange, setLastQualityChange] = useState(Date.now());
+  const [lastLevel, setLastLevel] = useState(0);
+  
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
 
-  // Generate audio spectrum visualization
   useEffect(() => {
-    // Simulate audio level visualization with a 1 second update interval
-    let interval: number | null = null;
-    
-    const simulateAudioLevel = () => {
-      interval = window.setInterval(() => {
-        const randomLevel = Math.floor(Math.random() * 100);
-        setAudioLevel(randomLevel);
-      }, 1000); // Update every 1 second as requested
+    // Initialize audio context and get available devices
+    const initAudio = async () => {
+      try {
+        // Initialize audio context first
+        audioContextRef.current = new AudioContext();
+        analyserRef.current = audioContextRef.current.createAnalyser();
+        analyserRef.current.fftSize = 256;
+        
+        // Get available audio devices
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices
+          .filter(device => device.kind === 'audioinput')
+          .map(device => ({
+            value: device.deviceId || `device-${Math.random().toString(36).substr(2, 9)}`,
+            label: device.label || `Microphone ${device.deviceId?.slice(0, 5) || 'Default'}`
+          }));
+        
+        // Ensure we have at least one device
+        if (audioInputs.length === 0) {
+          audioInputs.push({
+            value: 'default',
+            label: 'Default Microphone'
+          });
+        }
+        
+        setAudioDevices(audioInputs);
+        
+        // Start monitoring immediately with default device
+        await startMonitoring(audioInputs[0].value);
+        
+        // Start monitoring levels right away
+        monitorAudioLevel();
+      } catch (error) {
+        console.error('Error initializing audio:', error);
+      }
     };
 
-    // In a real app, we would check if user is recording
-    // and only simulate when recording is active
-    simulateAudioLevel();
+    initAudio();
 
     return () => {
-      if (interval) {
-        window.clearInterval(interval);
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
       }
     };
   }, []);
 
+  const startMonitoring = async (deviceId: string) => {
+    try {
+      // Stop previous stream if exists
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+
+      // Get new stream with fallback to default
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: deviceId === "default" ? undefined : deviceId,
+          sampleRate: 48000,
+          channelCount: 1,
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      }).catch(async (error) => {
+        console.warn('Failed to access selected device, falling back to default:', error);
+        return navigator.mediaDevices.getUserMedia({
+          audio: {
+            sampleRate: 48000,
+            channelCount: 1,
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+          }
+        });
+      });
+      
+      mediaStreamRef.current = stream;
+      
+      // Connect to analyser
+      const source = audioContextRef.current!.createMediaStreamSource(stream);
+      source.connect(analyserRef.current!);
+      
+      // Get audio track settings
+      const audioTrack = stream.getAudioTracks()[0];
+      const settings = audioTrack.getSettings();
+      setSampleRate(settings.sampleRate || 48000);
+      setBitDepth(settings.sampleSize || 24);
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      setSignalQuality("Microphone access denied");
+      setSelectedDevice("default");
+    }
+  };
+
+  const monitorAudioLevel = () => {
+    const analyser = analyserRef.current;
+    if (!analyser) return;
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    
+    const updateLevel = () => {
+      analyser.getByteFrequencyData(dataArray);
+      
+      // Calculate average level with emphasis on higher frequencies (voice range)
+      const voiceRange = dataArray.slice(20, 100);
+      const average = voiceRange.reduce((a, b) => a + b) / voiceRange.length;
+      
+      // Boost sensitivity for voice detection
+      const rawLevel = Math.min(100, Math.round((average / 128) * 100));
+      
+      // Apply less aggressive smoothing
+      const smoothedLevel = Math.round(lastLevel * 0.3 + rawLevel * 0.7);
+      setLastLevel(smoothedLevel);
+      setAudioLevel(smoothedLevel);
+      
+      // Update signal quality with hysteresis and debouncing
+      const now = Date.now();
+      if (now - lastQualityChange > 1000) { // Reduced to 1 second
+        let newQuality = signalQuality;
+        
+        if (smoothedLevel < 5) {
+          newQuality = "No signal";
+        } else if (smoothedLevel < 20) {
+          newQuality = "Weak signal";
+        } else if (smoothedLevel < 50) {
+          newQuality = "Good signal";
+        } else {
+          newQuality = "Strong signal";
+        }
+        
+        if (newQuality !== signalQuality) {
+          setSignalQuality(newQuality);
+          setLastQualityChange(now);
+        }
+      }
+      
+      requestAnimationFrame(updateLevel);
+    };
+    
+    updateLevel();
+  };
+
   const handleDeviceChange = (value: string) => {
     setSelectedDevice(value);
+    startMonitoring(value);
   };
 
   return (
@@ -57,7 +188,7 @@ const AudioSource: React.FC = () => {
             Input Device
           </Label>
           <div className="relative">
-            <Select defaultValue="default" onValueChange={handleDeviceChange}>
+            <Select value={selectedDevice} onValueChange={handleDeviceChange}>
               <SelectTrigger 
                 id="audio-source" 
                 className="w-full bg-background/50 text-white border-gray-800 transition-all duration-300 focus:border-primary/40 hover:border-gray-700 group"
@@ -73,9 +204,6 @@ const AudioSource: React.FC = () => {
                     {device.label}
                   </SelectItem>
                 ))}
-                <SelectItem value="built-in" className="hover:bg-primary/10">Built-in Microphone</SelectItem>
-                <SelectItem value="headset" className="hover:bg-primary/10">Headset Microphone</SelectItem>
-                <SelectItem value="external" className="hover:bg-primary/10">External USB Mic</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -103,10 +231,15 @@ const AudioSource: React.FC = () => {
         {/* Audio quality indicator */}
         <div className="text-xs text-gray-400 flex items-center justify-between">
           <span className="flex items-center">
-            <span className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></span>
-            Good signal quality
+            <span className={`h-2 w-2 rounded-full mr-1.5 ${
+              signalQuality.includes("No") ? "bg-red-500" :
+              signalQuality.includes("Weak") ? "bg-yellow-500" :
+              signalQuality.includes("Good") ? "bg-green-500" :
+              "bg-blue-500"
+            }`}></span>
+            {signalQuality}
           </span>
-          <span className="text-gray-500">48kHz / 24-bit</span>
+          <span className="text-gray-500">{sampleRate}Hz / {bitDepth}-bit</span>
         </div>
       </CardContent>
     </Card>
